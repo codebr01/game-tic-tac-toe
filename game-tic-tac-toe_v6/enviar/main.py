@@ -2,7 +2,6 @@ import sys
 import os
 import typing
 import time
-from cliente import Cliente
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QApplication, QFileDialog, QMessageBox, QWidget
@@ -18,10 +17,11 @@ from telas.tela_jogar_online_tabuleiro import Tela_Jogar_Online_Tabuleiro
 from telas.tela_jogar_online_tabuleiro_sem_botao import Tela_Jogar_Online_Tabuleiro_Sem_Botao
 
 
+import cliente
 dados = []
 minha_sala_id = None
 sala_jogando = None
-cl = Cliente()
+
 
 class Ui_Main(QtWidgets.QWidget):
     """
@@ -188,12 +188,12 @@ class Main(QMainWindow, Ui_Main):
         """
         Method opens the play screen for the current player.  
 
-        This method puts every user who created the room to play for the first time, or merges the users of a room to perform their move on the board.
+        ...
 
         """
         l = [[self.tela_jogar_online_tabuleiro.lineEdit.text(), self.tela_jogar_online_tabuleiro.lineEdit_2.text(), self.tela_jogar_online_tabuleiro.lineEdit_3.text()], [self.tela_jogar_online_tabuleiro.lineEdit_4.text(), self.tela_jogar_online_tabuleiro.lineEdit_5.text(),self.tela_jogar_online_tabuleiro.lineEdit_6.text()], [self.tela_jogar_online_tabuleiro.lineEdit_7.text(), self.tela_jogar_online_tabuleiro.lineEdit_8.text(), self.tela_jogar_online_tabuleiro.lineEdit_9.text()]]
         msg = "4" + "," + str(l[0][0]) + "," + str(l[0][1]) + "," + str(l[0][2]) + "," + str(l[1][0]) + "," + str(l[1][1]) + "," + str(l[1][2]) + "," + str(l[2][0]) + "," + str(l[2][1]) + "," + str(l[2][2]) + "," + str(dados[0])
-        recebeu = cl.enviar(msg)
+        recebeu = cliente.enviar(msg)
         if recebeu[0] == '1':
             dados[2] = '0'
             self.cleanTabuleiros()
@@ -220,13 +220,13 @@ class Main(QMainWindow, Ui_Main):
         """
         Method opens the waiting screen while the other player performs the move.  
 
-        This method puts every user who enters a room for the first time on a waiting screen, or when a game is already in progress, interspersing users within the screen.
+        ...
 
         """
         self.QtStack.setCurrentIndex(7)
         time.sleep(1)
         msg = "5," + str(dados[0])
-        recebeu = cl.enviar(msg)
+        recebeu = cliente.enviar(msg)
         if recebeu[0] == '0':
             self.abrirTelaJogarOnlineTabuleiroSemBotao()
         elif recebeu[0] == '1':
@@ -260,7 +260,7 @@ class Main(QMainWindow, Ui_Main):
         """
         Method tries to register on the server.  
 
-        This method asks the client to try to register the server in the database with the data provided.
+        ...
 
         """
         usuario = self.tela_cadastro.lineEdit_4.text()
@@ -269,7 +269,7 @@ class Main(QMainWindow, Ui_Main):
         senha = self.tela_cadastro.lineEdit_7.text()
         if usuario != '' and nickname != '' and email != '' and senha != '':
             msg = "1" + "," + usuario + "," + nickname + "," + email + "," + senha
-            recebeu = cl.enviar(msg)
+            recebeu = cliente.enviar(msg)
             if recebeu[0] == '1':
                 self.tela_cadastro.lineEdit_4.setText('')
                 self.tela_cadastro.lineEdit_5.setText('')
@@ -286,14 +286,14 @@ class Main(QMainWindow, Ui_Main):
         """
         Method tries to login to the server.  
 
-        This method asks the client to try to login with the data provided.
+        ...
 
         """
         usuario = self.tela_login.lineEdit.text()
         senha = self.tela_login.lineEdit_2.text()
         if usuario != '' and senha != '':
             msg = "0" + "," + usuario + "," + senha
-            recebeu = cl.enviar(msg)  # "0,usuario,senha"
+            recebeu = cliente.enviar(msg)  # "0,usuario,senha"
             recebeu.append('0')
             if recebeu[0] != '0':  # [1,7,code3brxdxd,0]
                 dados.append(recebeu[1])#id_bd
@@ -394,23 +394,22 @@ class Main(QMainWindow, Ui_Main):
         """
         Method creates a room and puts it in the match queue.
 
-        This method asks the client to tell the server that it wants to create a room and place it in the initial queue. After entering the creation of the room, the user enters a queue asking the server if there is any other user in his room.
+        ...
         
         """
         if dados[2] == '0':
             msg = "2," + str(dados[0]) + "," + str(dados[2])
-            recebeu = cl.enviar(msg)#"2,id_bd,0 ou 1"
+            recebeu = cliente.enviar(msg)#"2,id_bd,0 ou 1"
             if recebeu[0] == '1':
                 dados[2] = '1'
                 while True:
                     msg = "2," + str(dados[0]) + "," + str(dados[2])
-                    recebeu = cl.enviar(msg)
+                    recebeu = cliente.enviar(msg)
                     if recebeu[0] == '0':
                         continue
                     else:
                         break
                 # minha_sala_id = recebeu[1]
-                QMessageBox.information(None, 'PARTIDA', 'VOCE JOGA COMO X')
                 self.abrirTelaJogarOnlineTabuleiro()
             else:
                 QMessageBox.information(None, 'LARAPIO', 'VOCE JA ESTÁ NA FILA, NEM PENSAR RAPAZ')
@@ -421,14 +420,13 @@ class Main(QMainWindow, Ui_Main):
         """
         Method searches for the first free room in the match queue.
 
-        This method asks the client to inform the server that the user wants to enter the first open room in the list of rooms.
+        ...
         
         """
         msg = "3," + str(dados[0])
-        recebeu = cl.enviar(msg)
+        recebeu = cliente.enviar(msg)
         if recebeu[0] == '1':
             # sala_jogando = recebeu[1]
-            QMessageBox.information(None, 'PARTIDA', 'VOCE JOGA COMO O')
             self.abrirTelaJogarOnlineTabuleiroSemBotao()
         else:
             QMessageBox.information(None, 'ERRO', 'OPS e.e PARECE QUE A FILA ESTÁ VAZIA....')
@@ -439,7 +437,7 @@ class Main(QMainWindow, Ui_Main):
         """
         Offline board checker method.
 
-        This method is responsible for verifying the moves of two people who are in offline mode.
+        ...
 
         Returns
         -------
@@ -483,7 +481,7 @@ class Main(QMainWindow, Ui_Main):
         
         """
         msg = "-1," + str(dados[0])
-        recebeu = cl.enviar(msg)
+        recebeu = cliente.enviar(msg)
         print(recebeu)
         exit()
 
